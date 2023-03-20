@@ -11,16 +11,20 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import com.igonris.rickandmortyapp.data.entity.Character
+import com.igonris.rickandmortyapp.ui.components.TopBarComponent
 import com.igonris.rickandmortyapp.ui.theme.RickAndMortyAppTheme
 
 @Composable
 fun CharacterDetailsScreen(
+    navController: NavHostController
 ) {
     val viewModel: CharacterDetailsViewModel = hiltViewModel()
     val state: CharacterDetailsState by viewModel.state.collectAsState()
 
     Column(modifier = Modifier.fillMaxSize()) {
+        TopBarComponent(navController = navController)
         state.character?.let { CharacterDetailsView(character = it) }
         state.error?.let { Text(text = it) }
         if(state.loading) Text(text = "Cargando")

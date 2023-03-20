@@ -18,7 +18,7 @@ class ScreenNavigation(
                 HomeScreen(navController = navHostController)
             }
             composable(route = "details/{idCharacter}") {
-                CharacterDetailsScreen()
+                CharacterDetailsScreen(navController = navHostController)
             }
         }
 

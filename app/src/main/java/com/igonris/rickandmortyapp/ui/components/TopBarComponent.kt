@@ -16,7 +16,8 @@ import androidx.navigation.NavController
 @Composable
 fun TopBarComponent(
     navController: NavController,
-    extraIcons: List<Pair<ImageVector, () -> Unit>>
+    extraIcons: List<Pair<ImageVector, () -> Unit>> = emptyList(),
+    extraContent: @Composable () -> Unit = {}
 ) {
     val backStack: NavBackStackEntry? = navController.previousBackStackEntry
 
@@ -34,6 +35,8 @@ fun TopBarComponent(
                 )
             }
         }
+
+        extraContent()
 
         extraIcons.map { extraIcon ->
             IconButton(

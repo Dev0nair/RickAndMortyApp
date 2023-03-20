@@ -55,18 +55,20 @@ fun HomeScreen(
     ) {
         TopBarComponent(
             navController,
-            extraIcons = listOf(Icons.Default.Edit to viewModel::toggleShowDialog)
+            extraIcons = listOf(Icons.Default.Edit to viewModel::toggleShowDialog),
+            extraContent = {
+                OutlinedTextField(
+                    modifier = Modifier
+                        .weight(1f),
+                    shape = MaterialTheme.shapes.medium,
+                    value = searchedText,
+                    onValueChange = viewModel::searchValue,
+                    singleLine = true,
+                    placeholder = { Text(text = "Search character") }
+                )
+            }
         )
         state.error?.let { Snackbar { Text(text = it) } }
-        OutlinedTextField(
-            modifier = Modifier
-                .fillMaxWidth(),
-            shape = MaterialTheme.shapes.medium,
-            value = searchedText,
-            onValueChange = viewModel::searchValue,
-            singleLine = true,
-            placeholder = { Text(text = "Search character") }
-        )
         Spacer(modifier = Modifier.size(SmallSpacing))
         SwipeRefresh(
             state = swipeRefreshState,
@@ -82,10 +84,11 @@ fun HomeScreen(
         if(state.showDialog) {
             CharacterFilter(
                 actualFilter = filter,
-                onClose = { newFilter ->
+                onApply = { newFilter ->
                     viewModel.setFilter(newFilter)
                     viewModel.toggleShowDialog()
-                }
+                },
+                onCancel = viewModel::toggleShowDialog
             )
         }
     }

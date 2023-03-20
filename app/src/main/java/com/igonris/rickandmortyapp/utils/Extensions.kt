@@ -1,8 +1,10 @@
 package com.igonris.rickandmortyapp.utils
 
+import androidx.compose.ui.text.capitalize
 import androidx.navigation.NavController
 import com.igonris.rickandmortyapp.data.entity.SimpleCharacter
 import java.lang.Exception
+import java.util.*
 
 fun NavController.goToCharacterDetail(simpleCharacter: SimpleCharacter) {
     navigate("details/${simpleCharacter.id}")
@@ -24,4 +26,8 @@ fun <T> processEvent(event: Event<T>, onError: (String) -> Unit = {}, orElse: T)
     }
 
     return orElse
+}
+
+fun String.capitalizeFirstChar(): String {
+    return this.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
 }
