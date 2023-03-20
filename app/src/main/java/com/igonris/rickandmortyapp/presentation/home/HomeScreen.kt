@@ -32,13 +32,15 @@ import com.igonris.rickandmortyapp.ui.components.CharacterFilter
 import com.igonris.rickandmortyapp.ui.theme.*
 import com.igonris.rickandmortyapp.utils.goToCharacterDetail
 import com.igonris.rickandmortyapp.utils.isHorizontalOrientation
+import kotlinx.coroutines.flow.last
+import kotlinx.coroutines.flow.lastOrNull
 
 @Composable
 fun HomeScreen(
     navController: NavController
 ) {
     val viewModel: HomeViewModel = hiltViewModel()
-    val state: HomeViewState by viewModel.state.collectAsState()
+    val state: HomeViewState by viewModel.state.collectAsState(initial = HomeViewState())
     val swipeRefreshState: SwipeRefreshState =
         rememberSwipeRefreshState(isRefreshing = state.loading)
     val searchedText: String by viewModel.searchedText.collectAsState()

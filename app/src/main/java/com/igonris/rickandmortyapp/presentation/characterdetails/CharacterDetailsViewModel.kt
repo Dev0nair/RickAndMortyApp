@@ -4,7 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.igonris.rickandmortyapp.data.entity.Character
-import com.igonris.rickandmortyapp.domain.GetCharacterDetailsUseCase
+import com.igonris.rickandmortyapp.domain.IGetCharacterDetailsUseCase
 import com.igonris.rickandmortyapp.utils.AppDispatchers
 import com.igonris.rickandmortyapp.utils.Event
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -17,7 +17,7 @@ import javax.inject.Inject
 @HiltViewModel
 class CharacterDetailsViewModel @Inject constructor(
     private val dispatchers: AppDispatchers,
-    private val getCharacterDetailsUseCase: GetCharacterDetailsUseCase,
+    private val getCharacterDetailsUseCase: IGetCharacterDetailsUseCase,
     private val savedStateHandle: SavedStateHandle
 ): ViewModel() {
 
@@ -34,7 +34,7 @@ class CharacterDetailsViewModel @Inject constructor(
         val idCharacter: String = savedStateHandle.get<String>("idCharacter") ?: ""
 
         viewModelScope.launch(dispatchers.io) {
-            val result: Event<Character> = getCharacterDetailsUseCase.execute(idCharacter)
+            val result: Event<Character> = getCharacterDetailsUseCase(idCharacter)
             processResult(result)
         }
     }

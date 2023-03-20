@@ -15,20 +15,10 @@ fun NavController.goToCharacterDetail(simpleCharacter: SimpleCharacter) {
 
 suspend fun <T, R> runAndProcess( action: suspend () -> T, parse: (T) -> R): Event<R> {
     return try {
-        return  Event.Result(value = parse(action()))
+        Event.Result(value = parse(action()))
     } catch (e: Exception) {
         Event.Error(message = e.message ?: "")
     }
-}
-
-fun <T> processEvent(event: Event<T>, onError: (String) -> Unit = {}, orElse: T): T {
-    when (event) {
-        is Event.Result -> return event.value
-        is Event.Error -> onError(event.message)
-        else -> return orElse
-    }
-
-    return orElse
 }
 
 fun String.capitalizeFirstChar(): String {

@@ -6,6 +6,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.Dispatchers
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -18,7 +19,11 @@ object RepositoryModule {
 
     @Provides
     fun provideDispatchers(): AppDispatchers {
-        return AppDispatchers
+        return AppDispatchers(
+            io = Dispatchers.IO,
+            main = Dispatchers.Main,
+            default = Dispatchers.Default
+        )
     }
 
     @Provides

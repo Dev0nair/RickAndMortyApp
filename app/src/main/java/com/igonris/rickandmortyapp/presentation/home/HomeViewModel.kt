@@ -5,17 +5,18 @@ import androidx.lifecycle.viewModelScope
 import com.igonris.rickandmortyapp.data.entity.ListCharacterInfo
 import com.igonris.rickandmortyapp.data.entity.SimpleCharacter
 import com.igonris.rickandmortyapp.data.entity.filter.ApiCharacterFilter
-import com.igonris.rickandmortyapp.domain.GetFilteredCharactersListUseCase
+import com.igonris.rickandmortyapp.domain.IGetCharactersListUseCase
 import com.igonris.rickandmortyapp.utils.AppDispatchers
-import com.igonris.rickandmortyapp.utils.processEvent
+import com.igonris.rickandmortyapp.utils.Event
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val dispatchers: AppDispatchers,
-    private val getFilteredCharactersListUseCase: GetFilteredCharactersListUseCase
+    private val getFilteredCharactersListUseCase: IGetCharactersListUseCase
 ) : ViewModel() {
 
     /* Private Vars */
@@ -24,21 +25,11 @@ class HomeViewModel @Inject constructor(
     private val _searchedText: MutableStateFlow<String> = MutableStateFlow("")
     private val _filter: MutableStateFlow<ApiCharacterFilter> = MutableStateFlow(ApiCharacterFilter())
     private val _state: MutableStateFlow<HomeViewState> = MutableStateFlow(HomeViewState())
-    private val _searchedList: StateFlow<List<SimpleCharacter>> =
-        combine(_searchedText.debounce(500L), _filter) { text, filter ->
-            searchData(searchedText = text, filter = filter)
-        }
-            .flowOn(dispatchers.io)
-            .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     /* Public Vars */
     val searchedText: StateFlow<String> = _searchedText
     val filter: StateFlow<ApiCharacterFilter> = _filter
-    val state: StateFlow<HomeViewState> = combine(_searchedList, _state) { list, homeViewState ->
-        homeViewState.copy(data = list, error = null)
-    }
-    .flowOn(dispatchers.main)
-    .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), _state.value)
+    val state: StateFlow<HomeViewState> = _state
 
     /* Public Methods */
     fun toggleShowDialog() {
@@ -69,52 +60,54 @@ class HomeViewModel @Inject constructor(
 
     /* Private Methods */
     init {
-        loadData(reset = true)
+        _searchedText.debounce(350).combine(_filter) { actualSearchedText, actualFilter ->
+            val newDataList: List<SimpleCharacter> = searchData(actualFilter.copy(name = actualSearchedText))
+            _state.update { it.copy(data = newDataList) }
+        }.launchIn(viewModelScope)
     }
 
     private fun loadData(reset: Boolean = false) {
-        if(reset) nextPage = 0
+        if (reset) nextPage = 0
 
-        if(nextPage != null) {
+        if (nextPage != null) {
             _filter.update { it.copy(actualPage = nextPage!!) }
         }
     }
 
     private suspend fun getData(
         filter: ApiCharacterFilter,
-        text: String
     ): ListCharacterInfo {
-        val page: Int = nextPage ?: return ListCharacterInfo(null, emptyList())
+        val page: Int = nextPage ?: return ListCharacterInfo(0, emptyList())
 
-        return processEvent(
-            event = getFilteredCharactersListUseCase.execute(page, filter.copy(name = text)),
-            onError = { errorMsg -> _state.update { it.copy(error = errorMsg) } },
-            orElse = ListCharacterInfo(page, emptyList())
-        )
+        return withContext(dispatchers.io) {
+            val event: Event<ListCharacterInfo> = getFilteredCharactersListUseCase(page, filter)
+
+            return@withContext if (event is Event.Result<ListCharacterInfo>) event.value
+            else ListCharacterInfo(0, emptyList())
+        }
     }
 
     private suspend fun searchData(
-        searchedText: String,
         filter: ApiCharacterFilter
     ): List<SimpleCharacter> {
         // Checking if we got the following page. If it's null, it means we reached the last available page.
-        if (nextPage != null) {
-            _state.update { it.copy(loading = true) }
-            val data: ListCharacterInfo = getData(filter = filter.copy(actualPage = nextPage!!), text = searchedText)
-            _state.update { it.copy(loading = false) }
+        return withContext(dispatchers.main) {
+            if (nextPage != null) {
+                val data: ListCharacterInfo = getData(filter = filter)
 
-            // We only gettin nextPage == 0 when it's the first page or we want to reset,
-            // so in that case, we gonna be cleaning the list with the result of the page 0
-            val newList: List<SimpleCharacter> = if (nextPage == 0) {
-                data.list
+                // We only gettin nextPage == 0 when it's the first page or we want to reset,
+                // so in that case, we gonna be cleaning the list with the result of the page 0
+                val newList: List<SimpleCharacter> = if (nextPage == 0) {
+                    data.list
+                } else {
+                    _state.value.data + data.list
+                }
+
+                nextPage = data.nextPage
+                newList
             } else {
-                _searchedList.value + data.list
+                emptyList()
             }
-
-            nextPage = data.nextPage
-            return newList
-        } else {
-            return emptyList()
         }
     }
 
