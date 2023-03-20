@@ -14,6 +14,7 @@ val LargerSpacing: Dp = 30.dp
 val SmallElevation: Dp = 5.dp
 val MediumElevation: Dp = 10.dp
 val LargeElevation: Dp = 20.dp
+val LargerElevation: Dp = 40.dp
 
 val SmallRoundingSize: Dp = 5.dp
 val MediumRoundingSize: Dp = 15.dp

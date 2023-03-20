@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Rick y Morty App</string>
+    <string name="home_welcome_text">¡Busca tu personaje favorito!</string>
+    <string name="home_filter_search">Buscar personaje</string>
+    <string name="filter_gender">Género</string>
+    <string name="button_cancel">Cancelar</string>
+    <string name="button_apply">Aplicar</string>
+    <string name="loading">Cargando</string>
+    <string name="details_name">Nombre: %1$s</string>
+    <string name="details_gender">Género: %1$s</string>
+    <string name="details_origin">Origen: %1$s</string>
+    <string name="details_status">Estado: %1$s</string>
+    <string name="details_type">Tipo: %1$s</string>
+</resources>

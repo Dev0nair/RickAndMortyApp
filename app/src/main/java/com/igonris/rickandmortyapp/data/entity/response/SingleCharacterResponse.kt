@@ -22,6 +22,6 @@ data class SingleCharacterResponse(
     }
 
     fun toCharacter(): Character {
-        return Character(id = id, name = name, image = image, details = origin.name)
+        return Character(id = id, name = name, image = image, origin = origin.name, gender = gender, type = type, status = status)
     }
 }

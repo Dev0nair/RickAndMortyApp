@@ -1,3 +1,14 @@
 <resources>
-    <string name="app_name">RickAndMortyApp</string>
+    <string name="app_name">Rick and Morty App</string>
+    <string name="home_welcome_text">Search your favourite character!</string>
+    <string name="home_filter_search">Search character</string>
+    <string name="filter_gender">Gender</string>
+    <string name="button_cancel">Cancel</string>
+    <string name="button_apply">Apply</string>
+    <string name="loading">Loading</string>
+    <string name="details_name">Name: %1$s</string>
+    <string name="details_gender">Gender: %1$s</string>
+    <string name="details_origin">Origin: %1$s</string>
+    <string name="details_status">Status: %1$s</string>
+    <string name="details_type">Type: %1$s</string>
 </resources>

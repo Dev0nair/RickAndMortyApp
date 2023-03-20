@@ -1,5 +1,8 @@
 package com.igonris.rickandmortyapp.utils
 
+import android.content.res.Configuration
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.capitalize
 import androidx.navigation.NavController
 import com.igonris.rickandmortyapp.data.entity.SimpleCharacter
@@ -30,4 +33,9 @@ fun <T> processEvent(event: Event<T>, onError: (String) -> Unit = {}, orElse: T)
 
 fun String.capitalizeFirstChar(): String {
     return this.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
+}
+
+@Composable
+fun isHorizontalOrientation(): Boolean {
+    return LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
 }

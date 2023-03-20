@@ -1,22 +1,21 @@
 package com.igonris.rickandmortyapp.ui.components
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.igonris.rickandmortyapp.R
 import com.igonris.rickandmortyapp.data.entity.filter.ApiCharacterFilter
-import com.igonris.rickandmortyapp.data.entity.filter.Gender
 import com.igonris.rickandmortyapp.ui.theme.MediumElevation
 import com.igonris.rickandmortyapp.ui.theme.MediumSpacing
-import com.igonris.rickandmortyapp.utils.capitalizeFirstChar
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -54,32 +53,16 @@ fun CharacterFilter(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceAround
                 ) {
-                    Button(onClick = { onCancel() }) {
-                        Text("Cancel")
+                    Button(onClick = { onCancel() }, colors = ButtonDefaults.buttonColors(backgroundColor = Color.Gray)) {
+                        Text(text = stringResource(id = R.string.button_cancel))
                     }
 
                     Button(onClick = { onApply(filter.value) }) {
-                        Text("Apply")
+                        Text(stringResource(id = R.string.button_apply))
                     }
                 }
             }
         }
     }
 
-}
-
-@Composable
-fun GenderFilter(onSelected: (Gender) -> Unit, actualSelected: Gender) {
-    Column {
-        Text(text = "Gender", style = MaterialTheme.typography.h2)
-        Gender.values().map { gender ->
-            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = CenterVertically) {
-                RadioButton(
-                    onClick = { onSelected(gender) },
-                    selected = actualSelected == gender,
-                )
-                Text(modifier = Modifier.clickable { onSelected(gender) }, text = gender.name.capitalizeFirstChar(), style = MaterialTheme.typography.body1)
-            }
-        }
-    }
 }
