@@ -6,4 +6,5 @@ data class HomeViewState(
     val loading: Boolean = false,
     val data: List<SimpleCharacter> = emptyList(),
     val error: String? = null,
+    val showDialog: Boolean = false
 )

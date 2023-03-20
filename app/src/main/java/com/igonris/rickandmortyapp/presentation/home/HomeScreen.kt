@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -15,6 +17,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
@@ -22,15 +25,20 @@ import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.SwipeRefreshState
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.igonris.rickandmortyapp.R
+import com.igonris.rickandmortyapp.data.entity.Character
 import com.igonris.rickandmortyapp.data.entity.SimpleCharacter
+import com.igonris.rickandmortyapp.data.entity.filter.ApiCharacterFilter
+import com.igonris.rickandmortyapp.ui.components.CharacterFilter
+import com.igonris.rickandmortyapp.ui.components.TopBarComponent
 import com.igonris.rickandmortyapp.ui.theme.LargeSpacing
 import com.igonris.rickandmortyapp.ui.theme.MediumSpacing
 import com.igonris.rickandmortyapp.ui.theme.RickAndMortyAppTheme
 import com.igonris.rickandmortyapp.ui.theme.SmallSpacing
+import com.igonris.rickandmortyapp.utils.ScreenNavigation
 import com.igonris.rickandmortyapp.utils.goToCharacterDetail
 
 @Composable
-fun HomeComponent(
+fun HomeScreen(
     navController: NavController
 ) {
     val viewModel: HomeViewModel = hiltViewModel()
@@ -38,11 +46,18 @@ fun HomeComponent(
     val swipeRefreshState: SwipeRefreshState =
         rememberSwipeRefreshState(isRefreshing = state.loading)
     val searchedText: String by viewModel.searchedText.collectAsState()
+    val filter: ApiCharacterFilter by viewModel.filter.collectAsState()
 
     Column(
-        modifier = Modifier.padding(SmallSpacing)
+        modifier = Modifier
+            .padding(SmallSpacing)
+            .fillMaxSize()
     ) {
-        state.error?.let { Text(text = it) }
+        TopBarComponent(
+            navController,
+            extraIcons = listOf(Icons.Default.Edit to viewModel::toggleShowDialog)
+        )
+        state.error?.let { Snackbar { Text(text = it) } }
         OutlinedTextField(
             modifier = Modifier
                 .fillMaxWidth(),
@@ -50,7 +65,7 @@ fun HomeComponent(
             value = searchedText,
             onValueChange = viewModel::searchValue,
             singleLine = true,
-            placeholder = { Text(text = "Search character")}
+            placeholder = { Text(text = "Search character") }
         )
         Spacer(modifier = Modifier.size(SmallSpacing))
         SwipeRefresh(
@@ -61,6 +76,16 @@ fun HomeComponent(
                 list = state.data,
                 onClick = navController::goToCharacterDetail,
                 onCharacterShown = viewModel::onCharacterScrolled
+            )
+        }
+
+        if(state.showDialog) {
+            CharacterFilter(
+                actualFilter = filter,
+                onClose = { newFilter ->
+                    viewModel.setFilter(newFilter)
+                    viewModel.toggleShowDialog()
+                }
             )
         }
     }

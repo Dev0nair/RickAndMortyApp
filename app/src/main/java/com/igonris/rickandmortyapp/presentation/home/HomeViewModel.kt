@@ -41,6 +41,9 @@ class HomeViewModel @Inject constructor(
     .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), _state.value)
 
     /* Public Methods */
+    fun toggleShowDialog() {
+        _state.update { it.copy(showDialog = !it.showDialog) }
+    }
 
     fun onSwipe() {
         loadData(reset = true)
