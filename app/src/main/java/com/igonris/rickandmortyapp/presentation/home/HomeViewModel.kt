@@ -1,5 +1,6 @@
 package com.igonris.rickandmortyapp.presentation.home
 
+import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -10,6 +11,7 @@ import com.igonris.rickandmortyapp.domain.IGetCharactersListUseCase
 import com.igonris.rickandmortyapp.utils.AppDispatchers
 import com.igonris.rickandmortyapp.utils.Event
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -24,6 +26,11 @@ class HomeViewModel @Inject constructor(
     /* Private Vars */
     private var nextPage: Int? = 0
     private val timeToWaitForUserWriting: Long = 500L
+    private val coroutineExceptionHandler by lazy {
+        CoroutineExceptionHandler { _, throwable ->
+            Log.e(javaClass.name, "uncaught error: ${throwable.message}")
+        }
+    }
 
     private val _searchedText: MutableStateFlow<String> = MutableStateFlow("")
     private val _filter: MutableStateFlow<ApiCharacterFilter> = MutableStateFlow(ApiCharacterFilter())
@@ -91,7 +98,7 @@ class HomeViewModel @Inject constructor(
     ): ListCharacterInfo {
         val page: Int = nextPage ?: return ListCharacterInfo(0, emptyList())
 
-        return withContext(dispatchers.io) {
+        return withContext(dispatchers.io + coroutineExceptionHandler) {
             val event: Event<ListCharacterInfo> = getFilteredCharactersListUseCase(page, filter)
 
             return@withContext if (event is Event.Result<ListCharacterInfo>) event.value
@@ -102,7 +109,7 @@ class HomeViewModel @Inject constructor(
     private suspend fun searchData(
         filter: ApiCharacterFilter
     ): List<SimpleCharacter> {
-        return withContext(dispatchers.main) {
+        return withContext(dispatchers.main + coroutineExceptionHandler) {
             // Checking if we got the following page. If it's null, it means we reached the last available page.
             val data: ListCharacterInfo = getData(filter = filter)
 

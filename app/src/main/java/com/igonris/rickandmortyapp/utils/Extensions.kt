@@ -6,8 +6,11 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.capitalize
 import androidx.navigation.NavController
 import com.igonris.rickandmortyapp.data.entity.SimpleCharacter
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineExceptionHandler
 import java.lang.Exception
 import java.util.*
+import kotlin.coroutines.CoroutineContext
 
 fun NavController.goToCharacterDetail(simpleCharacter: SimpleCharacter) {
     navigate("details/${simpleCharacter.id}")
