@@ -12,21 +12,14 @@ import com.igonris.rickandmortyapp.utils.Event
 import com.nhaarman.mockitokotlin2.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.*
 import okhttp3.internal.immutableListOf
 import org.amshove.kluent.shouldBe
-import org.amshove.kluent.shouldBeInstanceOf
-import org.amshove.kluent.shouldNotBe
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.junit.runner.RunWith
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class HomeViewModelTest {
@@ -41,7 +34,12 @@ class HomeViewModelTest {
 
     // region ViewModel
     private val getCharactersListUseCase: IGetCharactersListUseCase = mock()
-    private val homeViewModel: HomeViewModel by lazy { HomeViewModel(dispatchers, getCharactersListUseCase) }
+    private val homeViewModel: HomeViewModel by lazy {
+        HomeViewModel(
+            dispatchers, getCharactersListUseCase
+//         SavedStateHandle.createHandle(null, null)
+        )
+    }
     // endregion
 
     @Before

@@ -51,7 +51,7 @@ class GetCharacterDetailsUseCaseTest {
     }
 
     @Test
-    fun `check if data reloaded when updating filter`() = runTest {
+    fun `check the repo get the correct details of a character`() = runTest {
         val characterDetail: Character = Character(id = 0, name = "Ricardo", image = "", gender = Gender.female.parseName())
         val characterResponse: SingleCharacterResponse = SingleCharacterResponse(id = characterDetail.id, name = characterDetail.name, gender = characterDetail.gender)
 

@@ -40,7 +40,7 @@ fun HomeScreen(
     navController: NavController
 ) {
     val viewModel: HomeViewModel = hiltViewModel()
-    val state: HomeViewState by viewModel.state.collectAsState(initial = HomeViewState())
+    val state: HomeViewState by viewModel.state.collectAsState()
     val swipeRefreshState: SwipeRefreshState =
         rememberSwipeRefreshState(isRefreshing = state.loading)
     val searchedText: String by viewModel.searchedText.collectAsState()

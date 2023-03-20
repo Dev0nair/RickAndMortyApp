@@ -1,5 +1,6 @@
 package com.igonris.rickandmortyapp.presentation.home
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.igonris.rickandmortyapp.data.entity.ListCharacterInfo
@@ -17,10 +18,12 @@ import javax.inject.Inject
 class HomeViewModel @Inject constructor(
     private val dispatchers: AppDispatchers,
     private val getFilteredCharactersListUseCase: IGetCharactersListUseCase
+//    ,private val savedStateHandle: SavedStateHandle // Used to persist stateFlows values even when app removes app instance for memory purposes
 ) : ViewModel() {
 
     /* Private Vars */
     private var nextPage: Int? = 0
+    private val timeToWaitForUserWriting: Long = 500L
 
     private val _searchedText: MutableStateFlow<String> = MutableStateFlow("")
     private val _filter: MutableStateFlow<ApiCharacterFilter> = MutableStateFlow(ApiCharacterFilter())
@@ -48,19 +51,28 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+    /*
+    * Everytime we update the searched value it's recommended to restart the page number
+    * */
     fun searchValue(value: String) {
         nextPage = 0
         _searchedText.update { value }
     }
 
-    fun setFilter(filter: ApiCharacterFilter) {
+    /*
+    * Everytime we update the searched value it's recommended to restart the page number
+    * */
+    fun setFilter(newFilter: ApiCharacterFilter) {
         nextPage = 0
-        _filter.update { filter }
+        _filter.update { newFilter }
     }
 
     /* Private Methods */
     init {
-        _searchedText.debounce(350).combine(_filter) { actualSearchedText, actualFilter ->
+        /*
+        * Everytime we update the searchedText or the filter, the data is updated
+        * */
+        _searchedText.debounce(timeToWaitForUserWriting).combine(_filter) { actualSearchedText, actualFilter ->
             val newDataList: List<SimpleCharacter> = searchData(actualFilter.copy(name = actualSearchedText))
             _state.update { it.copy(data = newDataList) }
         }.launchIn(viewModelScope)
@@ -90,25 +102,33 @@ class HomeViewModel @Inject constructor(
     private suspend fun searchData(
         filter: ApiCharacterFilter
     ): List<SimpleCharacter> {
-        // Checking if we got the following page. If it's null, it means we reached the last available page.
         return withContext(dispatchers.main) {
-            if (nextPage != null) {
-                val data: ListCharacterInfo = getData(filter = filter)
+            // Checking if we got the following page. If it's null, it means we reached the last available page.
+            val data: ListCharacterInfo = getData(filter = filter)
 
-                // We only gettin nextPage == 0 when it's the first page or we want to reset,
-                // so in that case, we gonna be cleaning the list with the result of the page 0
-                val newList: List<SimpleCharacter> = if (nextPage == 0) {
-                    data.list
-                } else {
-                    _state.value.data + data.list
-                }
-
-                nextPage = data.nextPage
-                newList
+            // We only gettin nextPage == 0 when it's the first page or we want to reset,
+            // so in that case, we gonna be cleaning the list with the result of the page 0
+            val newList: List<SimpleCharacter> = if (filter.actualPage == 0) {
+                data.list
             } else {
-                emptyList()
+                state.value.data + data.list
             }
+
+            nextPage = data.nextPage
+            newList
         }
     }
 
+    // Updaters
+//    private fun updateState(homeViewState: HomeViewState) {
+//        savedStateHandle["state"] = homeViewState
+//    }
+//
+//    private fun updateSearchedText(text: String) {
+//        savedStateHandle["searchedText"] = text
+//    }
+//
+//    private fun updateFilter(filter: ApiCharacterFilter) {
+//        savedStateHandle["filter"] = filter
+//    }
 }
