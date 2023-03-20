@@ -6,9 +6,7 @@ import androidx.compose.material.Card
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Snackbar
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -30,18 +28,30 @@ fun CharacterDetailsScreen(
     val viewModel: CharacterDetailsViewModel = hiltViewModel()
     val state: CharacterDetailsState by viewModel.state.collectAsState()
 
+    val imageLoading: MutableState<Boolean> = remember {
+        mutableStateOf(false)
+    }
+
     Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
         TopBarComponent(navController = navController)
-        if(state.loading) CircularProgressIndicator()
-        state.character?.let { CharacterDetailsView(character = it, modifier = Modifier.weight(1f)) }
-        state.error?.let { Snackbar {
-            Text(text = it)
-        } }
+        if (state.loading || imageLoading.value) CircularProgressIndicator()
+        state.character?.let {
+            CharacterDetailsView(
+                character = it,
+                modifier = Modifier.weight(1f),
+                onLoading = { loading -> imageLoading.value = loading}
+            )
+        }
+        state.error?.let {
+            Snackbar {
+                Text(text = it)
+            }
+        }
     }
 }
 
 @Composable
-fun CharacterDetailsView(character: Character, modifier: Modifier = Modifier) {
+fun CharacterDetailsView(character: Character, modifier: Modifier = Modifier, onLoading: (Boolean) -> Unit = {}) {
     LazyColumn(
         modifier = modifier.padding(MediumSpacing),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -50,7 +60,10 @@ fun CharacterDetailsView(character: Character, modifier: Modifier = Modifier) {
             AsyncImage(
                 modifier = Modifier.fillParentMaxWidth(0.9f),
                 model = character.image,
-                contentDescription = "${character.name} image"
+                contentDescription = "${character.name} image",
+                onLoading = { onLoading(true) },
+                onError = { onLoading(false) },
+                onSuccess = { onLoading(false) }
             )
         }
         item {
