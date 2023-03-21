@@ -1,6 +1,7 @@
 package com.igonris.rickandmortyapp.viewmodel
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import androidx.lifecycle.SavedStateHandle
 import com.igonris.rickandmortyapp.data.entity.ListCharacterInfo
 import com.igonris.rickandmortyapp.data.entity.SimpleCharacter
 import com.igonris.rickandmortyapp.data.entity.filter.ApiCharacterFilter
@@ -36,8 +37,7 @@ class HomeViewModelTest {
     private val getCharactersListUseCase: IGetCharactersListUseCase = mock()
     private val homeViewModel: HomeViewModel by lazy {
         HomeViewModel(
-            dispatchers, getCharactersListUseCase
-//         SavedStateHandle.createHandle(null, null)
+            dispatchers, getCharactersListUseCase, SavedStateHandle.createHandle(null, null)
         )
     }
     // endregion

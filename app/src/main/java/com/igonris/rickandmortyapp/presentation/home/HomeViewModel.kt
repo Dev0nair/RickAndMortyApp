@@ -19,8 +19,8 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val dispatchers: AppDispatchers,
-    private val getFilteredCharactersListUseCase: IGetCharactersListUseCase
-//    ,private val savedStateHandle: SavedStateHandle // Used to persist stateFlows values even when app removes app instance for memory purposes
+    private val getFilteredCharactersListUseCase: IGetCharactersListUseCase,
+    private val savedStateHandle: SavedStateHandle // Used to persist stateFlows values even when app removes app instance for memory purposes
 ) : ViewModel() {
 
     /* Private Vars */
@@ -32,9 +32,9 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    private val _searchedText: MutableStateFlow<String> = MutableStateFlow("")
-    private val _filter: MutableStateFlow<ApiCharacterFilter> = MutableStateFlow(ApiCharacterFilter())
-    private val _state: MutableStateFlow<HomeViewState> = MutableStateFlow(HomeViewState())
+    private val _searchedText: MutableStateFlow<String> = MutableStateFlow(savedStateHandle["searchedText"] ?: "")
+    private val _filter: MutableStateFlow<ApiCharacterFilter> = MutableStateFlow(savedStateHandle["filter"] ?: ApiCharacterFilter())
+    private val _state: MutableStateFlow<HomeViewState> = MutableStateFlow(savedStateHandle["state"]?:HomeViewState())
 
     /* Public Vars */
     val searchedText: StateFlow<String> = _searchedText
@@ -43,7 +43,7 @@ class HomeViewModel @Inject constructor(
 
     /* Public Methods */
     fun toggleShowDialog() {
-        _state.update { it.copy(showDialog = !it.showDialog) }
+        updateState { it.copy(showDialog = !it.showDialog) }
     }
 
     fun onSwipe() {
@@ -63,7 +63,7 @@ class HomeViewModel @Inject constructor(
     * */
     fun searchValue(value: String) {
         nextPage = 0
-        _searchedText.update { value }
+        updateSearchedText { value }
     }
 
     /*
@@ -71,7 +71,7 @@ class HomeViewModel @Inject constructor(
     * */
     fun setFilter(newFilter: ApiCharacterFilter) {
         nextPage = 0
-        _filter.update { newFilter }
+        updateFilter { newFilter }
     }
 
     /* Private Methods */
@@ -81,7 +81,7 @@ class HomeViewModel @Inject constructor(
         * */
         _searchedText.debounce(timeToWaitForUserWriting).combine(_filter) { actualSearchedText, actualFilter ->
             val newDataList: List<SimpleCharacter> = searchData(actualFilter.copy(name = actualSearchedText))
-            _state.update { it.copy(data = newDataList) }
+            updateState { it.copy(data = newDataList) }
         }.launchIn(viewModelScope)
     }
 
@@ -89,7 +89,7 @@ class HomeViewModel @Inject constructor(
         if (reset) nextPage = 0
 
         if (nextPage != null) {
-            _filter.update { it.copy(actualPage = nextPage!!) }
+            updateFilter { it.copy(actualPage = nextPage!!) }
         }
     }
 
@@ -127,15 +127,21 @@ class HomeViewModel @Inject constructor(
     }
 
     // Updaters
-//    private fun updateState(homeViewState: HomeViewState) {
-//        savedStateHandle["state"] = homeViewState
-//    }
-//
-//    private fun updateSearchedText(text: String) {
-//        savedStateHandle["searchedText"] = text
-//    }
-//
-//    private fun updateFilter(filter: ApiCharacterFilter) {
-//        savedStateHandle["filter"] = filter
-//    }
+    private fun updateState(update: (HomeViewState) -> HomeViewState) {
+        val newState: HomeViewState = update(_state.value)
+        savedStateHandle["state"] = newState
+        _state.update { newState }
+    }
+
+    private fun updateSearchedText(update: (String) -> String) {
+        val newText: String = update(_searchedText.value)
+        savedStateHandle["searchedText"] = newText
+        _searchedText.update { newText }
+    }
+
+    private fun updateFilter(update: (ApiCharacterFilter) -> ApiCharacterFilter) {
+        val newFilter: ApiCharacterFilter = update(_filter.value)
+        savedStateHandle["filter"] = newFilter
+        _filter.update { newFilter }
+    }
 }
